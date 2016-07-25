@@ -7,9 +7,24 @@ import jubatus.common
 from .types import *
 from jubatus.common.types import *
 
-class Classifier(jubatus.common.ClientBase):
+try:
+  from jubatus.embedded import Classifier as _EmbeddedClassifier
+except ImportError:
+  from jubatus.common.client import NullEmbeddedEngine as _EmbeddedClassifier
+
+class Classifier(object):
+  def __init__(self, host='127.0.0.1', port=9199, name='', timeout=10, config=None):
+    if config:
+      self.backend = _EmbeddedClassifier(config)
+    else:
+      self.backend = _RPCClassifier(host, port, name, timeout)
+
+  def __getattr__(self, method):
+    return getattr(self.backend, method)
+
+class _RPCClassifier(jubatus.common.ClientBase):
   def __init__(self, host, port, name, timeout=10):
-    super(Classifier, self).__init__(host, port, name, timeout)
+    super(_RPCClassifier, self).__init__(host, port, name, timeout)
 
   def train(self, data):
     return self.jubatus_client.call("train", [data], TInt(True, 4), [TList(

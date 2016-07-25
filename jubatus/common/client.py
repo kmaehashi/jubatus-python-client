@@ -1,3 +1,4 @@
+import json
 import msgpackrpc
 from .types import *
 
@@ -97,3 +98,12 @@ class ClientBase(object):
             [],
             TMap(TString(), TMap(TString(), TString())),
             [])
+
+class NullEmbeddedEngine(object):
+  def __init__(self, config):
+    raise Exception('Embedded Jubatus Python module is not installed.')
+
+class ConfigFile(dict):
+  def __init__(self, filename):
+    with open(filename) as f:
+      self.update(json.load(f))
